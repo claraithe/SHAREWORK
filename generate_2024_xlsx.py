@@ -8,7 +8,6 @@ import pandas as pd
 import pdfplumber
 
 INPUT_DIR = "2024_DATA"
-EXAMPLE_DIR = "2023_EXAMPLE"
 OUTPUT_DIR = "2024_OUTPUT"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -21,11 +20,11 @@ ITALIAN_MONTHS = {
 
 WEEKDAY_IT = {0: "LUN", 1: "MAR", 2: "MER", 3: "GIO", 4: "VEN", 5: "SAB", 6: "DOM"}
 
-# Convert "HH:MM" to excel fraction
-def time_to_excel_fraction(timestr):
+# Convert "HH:MM" to numeric H.MM (minutes as two decimal digits)
+def time_to_numeric(timestr):
     try:
         h, m = map(int, timestr.split(':'))
-        return (h*60 + m) / (24*60)
+        return h + (m / 100.0)
     except Exception:
         return None
 
@@ -44,7 +43,6 @@ def parse_month_text(text, year, month_number):
     # Normalize
     txt = text.replace('\r', '\n')
     lines = [l.rstrip() for l in txt.splitlines()]
-    # Join lines into a single string, but keep newlines
     joined = '\n'.join(lines)
 
     # Heuristic segmentation: split on lines that start with day number
@@ -65,12 +63,9 @@ def parse_month_text(text, year, month_number):
         time_to = tm.group(2) if tm else None
         if tm:
             activity_part = body[:tm.start()].strip()
-            remainder = body[tm.end():].strip()
         else:
-            # No time. Use first line as activity
             activity_part = body.split('\n',1)[0].strip()
-            remainder = '\n'.join(body.split('\n')[1:]).strip()
-        # Determine desc1/desc2 based on examples heuristics: split activity by ' - ' or ':' or first comma
+        # Determine desc1/desc2: split by ' - ' or ':' or first comma (heuristic)
         desc1 = ''
         desc2 = ''
         if ' - ' in activity_part:
@@ -117,8 +112,8 @@ def process_pdf_file(pdf_path):
     for r in rows:
         date = r['date']
         daycode = WEEKDAY_IT[date.weekday()] if date else ''
-        tf = time_to_excel_fraction(r['time_from']) if r['time_from'] else None
-        tt = time_to_excel_fraction(r['time_to']) if r['time_to'] else None
+        tf = time_to_numeric(r['time_from']) if r['time_from'] else None
+        tt = time_to_numeric(r['time_to']) if r['time_to'] else None
         out_rows.append({
             'A_date': date,
             'B_day': daycode,
@@ -147,10 +142,8 @@ def main():
         month_name, year, df = res
         out_name = f"{month_name} {year}.xlsx"
         out_path = os.path.join(OUTPUT_DIR, out_name)
-        # Ensure date column is datetime
         if not df.empty:
             df['A_date'] = pd.to_datetime(df['A_date'])
-        # Write excel file
         with pd.ExcelWriter(out_path, engine='openpyxl', datetime_format='yyyy-mm-dd', date_format='yyyy-mm-dd') as writer:
             df.to_excel(writer, index=False, sheet_name=month_name)
         print('Saved', out_path)
