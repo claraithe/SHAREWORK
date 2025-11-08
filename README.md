@@ -129,6 +129,21 @@ To contribute to SHAREWORK:
 
 TURNI 2024 - SHAREWORK Project
 
+## Documentation
+
+### Quick Links
+- **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes
+- **[Collaboration Guide](COLLABORATION_GUIDE.md)** - Comprehensive best practices
+- **[Work Item Template](WORK_ITEM_TEMPLATE.md)** - Template for creating work items
+- **[Documentation Index](INDEX.md)** - Complete documentation navigation
+- **[Examples](examples/)** - Real-world work item examples
+- **[Contributing](CONTRIBUTING.md)** - How to contribute
+
+### Examples
+- [Code Optimization Example](examples/example_work_item_1.md)
+- [Documentation Example](examples/example_work_item_2.md)
+- [Bug Fix Example](examples/example_work_item_3.md)
+
 ## Support
 
 For questions or issues, please open an issue in the repository.
